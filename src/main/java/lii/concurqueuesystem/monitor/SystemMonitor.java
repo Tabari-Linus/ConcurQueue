@@ -54,6 +54,31 @@ public class SystemMonitor implements Runnable {
     @Override
     public void run() {
         logger.info("System monitor started");
+
+        while (!shutdown.get()) {
+            try {
+                logSystemStatus();
+
+                detectStalledTasks();
+
+                if (shouldExportToJson()) {
+                    exportTaskStatusToJson();
+                    lastExportTime = System.currentTimeMillis();
+                }
+
+                monitorCycles.incrementAndGet();
+                Thread.sleep(MONITOR_INTERVAL_MS);
+
+            } catch (InterruptedException e) {
+                logger.info("System monitor interrupted");
+                Thread.currentThread().interrupt();
+                break;
+            } catch (Exception e) {
+                logger.severe("System monitor encountered error: " + e.getMessage());
+            }
+        }
+
+        logger.info("System monitor shutting down");
     }
 
     private void logSystemStatus() {
