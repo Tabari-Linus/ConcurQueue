@@ -12,9 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
-public class TaskConsumer implements Runnable {
+public class TaskWorker implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(TaskConsumer.class.getName());
+    private static final Logger logger = Logger.getLogger(TaskWorker.class.getName());
     private static final int MAX_RETRIES = 3;
     private static final double FAILURE_PROBABILITY = 0.15;
 
@@ -26,7 +26,7 @@ public class TaskConsumer implements Runnable {
     private final Random random;
     private final String workerName;
 
-    public TaskConsumer(BlockingQueue<Task> taskQueue,
+    public TaskWorker(BlockingQueue<Task> taskQueue,
                       BlockingQueue<Task> retryQueue,
                       ConcurrentHashMap<String, TaskStatus> taskStatusMap,
                       AtomicInteger tasksProcessed,
