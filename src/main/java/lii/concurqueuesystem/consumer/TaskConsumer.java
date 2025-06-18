@@ -44,6 +44,7 @@ public class TaskConsumer implements Runnable {
         logger.info(String.format("Worker %s started", workerName));
     }
 
+
     private void handleTaskFailure(Task task, Exception e) {
         String taskId = task.getId().toString();
 
@@ -68,6 +69,21 @@ public class TaskConsumer implements Runnable {
             logger.warning(String.format("Task %s abandoned after %d retry attempts",
                     task.getName(), MAX_RETRIES));
         }
+    }
+
+    private long calculateProcessingTime(Task task) {
+        int priority = task.getPriority();
+        if (priority >= 8) {
+            return 2000 + random.nextInt(3000);
+        } else if (priority >= 4) {
+            return 1000 + random.nextInt(2000);
+        } else {
+            return 500 + random.nextInt(1000);
+        }
+    }
+
+    private boolean shouldSimulateFailure() {
+        return random.nextDouble() < FAILURE_PROBABILITY;
     }
 
 }
