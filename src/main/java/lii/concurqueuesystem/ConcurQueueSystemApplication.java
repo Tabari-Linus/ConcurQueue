@@ -1,7 +1,7 @@
 package lii.concurqueuesystem;
 
 import lii.concurqueuesystem.consumer.RetryWorker;
-import lii.concurqueuesystem.consumer.TaskWorker;
+import lii.concurqueuesystem.consumer.TaskConsumer;
 import lii.concurqueuesystem.enums.ProducerStrategy;
 import lii.concurqueuesystem.enums.TaskStatus;
 import lii.concurqueuesystem.model.Task;
@@ -124,7 +124,7 @@ public class ConcurQueueSystemApplication {
         logger.info("Starting worker threads...");
 
         for (int i = 0; i < WORKER_POOL_SIZE; i++) {
-            workerPool.submit(new TaskWorker(
+            workerPool.submit(new TaskConsumer(
                     taskQueue,
                     retryQueue,
                     taskStatusMap,
