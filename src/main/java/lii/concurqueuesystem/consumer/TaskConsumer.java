@@ -42,7 +42,32 @@ public class TaskConsumer implements Runnable {
     @Override
     public void run() {
         logger.info(String.format("Worker %s started", workerName));
+    }
 
+    private void handleTaskFailure(Task task, Exception e) {
+        String taskId = task.getId().toString();
+
+        logger.warning(String.format("Worker %s failed to process task %s: %s",
+                workerName, task.getName(), e.getMessage()));
+
+        if (task.getRetryCount() < MAX_RETRIES) {
+            Task retryTask = new Task(task);
+            taskStatusMap.put(taskId, TaskStatus.RETRY);
+
+            try {
+                retryQueue.put(retryTask);
+                logger.info(String.format("Task %s queued for retry (attempt %d/%d)",
+                        task.getName(), retryTask.getRetryCount(), MAX_RETRIES));
+            } catch (InterruptedException ie) {
+                logger.severe(String.format("Failed to queue retry for task %s", task.getName()));
+                taskStatusMap.put(taskId, TaskStatus.FAILED);
+                Thread.currentThread().interrupt();
+            }
+        } else {
+            taskStatusMap.put(taskId, TaskStatus.ABANDONED);
+            logger.warning(String.format("Task %s abandoned after %d retry attempts",
+                    task.getName(), MAX_RETRIES));
+        }
     }
 
 }
