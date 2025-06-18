@@ -17,6 +17,7 @@ public class Task implements Comparable<Task>{
     private final String payload;
     private int retryCount = 0;
     private static final int MAX_RETRIES = 3;
+    private Instant lastProcessedTimestamp;
 
     public Task(String name, int priority, String payload) {
         this.id = UUID.randomUUID();
