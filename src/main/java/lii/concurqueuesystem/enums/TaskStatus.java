@@ -5,9 +5,9 @@ import lombok.Getter;
 
 @Getter
 public enum TaskStatus {
-    SUBMITTED("Task has been submitted to the queue"),
+    SUBMITTED("Task has been submitted to queue"),
     PROCESSING("Task is currently being processed by a worker"),
-    COMPLETED("Task has been successfully completed"),
+    COMPLETED("Task has been completed successfully"),
     FAILED("Task processing failed"),
     RETRY("Task failed but will be retried"),
     ABANDONED("Task exceeded maximum retry attempts");
