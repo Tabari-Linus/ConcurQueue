@@ -4,6 +4,7 @@ import lii.concurqueuesystem.enums.TaskStatus;
 import lii.concurqueuesystem.exception.TaskProcessingException;
 import lii.concurqueuesystem.model.Task;
 
+import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,6 +45,42 @@ public class TaskConsumer implements Runnable {
         logger.info(String.format("Worker %s started", workerName));
     }
 
+    private void processTask(Task task) {
+        String taskId = task.getId().toString();
+        Instant startTime = Instant.now();
+
+        try {
+            taskStatusMap.put(taskId, TaskStatus.PROCESSING);
+
+            logger.info(String.format("Worker %s processing task: %s",
+                    workerName, task));
+
+            long processingTime = calculateProcessingTime(task);
+            Thread.sleep(processingTime);
+
+            if (shouldSimulateFailure()) {
+                throw new TaskProcessingException("Simulated processing failure");
+            }
+
+            taskStatusMap.put(taskId, TaskStatus.COMPLETED);
+            tasksProcessed.incrementAndGet();
+
+            long actualProcessingTime = Instant.now().toEpochMilli() - startTime.toEpochMilli();
+            totalProcessingTime.addAndGet(actualProcessingTime);
+
+            logger.info(String.format("Worker %s completed task %s in %d ms",
+                    workerName, task.getName(), actualProcessingTime));
+
+        } catch (InterruptedException e) {
+            logger.info(String.format("Worker %s interrupted while processing task %s",
+                    workerName, task.getName()));
+            taskStatusMap.put(taskId, TaskStatus.FAILED);
+            Thread.currentThread().interrupt();
+
+        } catch (TaskProcessingException e) {
+            handleTaskFailure(task, e);
+        }
+    }
 
     private void handleTaskFailure(Task task, Exception e) {
         String taskId = task.getId().toString();
