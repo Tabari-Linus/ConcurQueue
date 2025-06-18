@@ -21,6 +21,15 @@ public class Task implements Comparable<Task>{
         this.payload = payload;
     }
 
+    private Task(Task original) {
+        this.id = original.id;
+        this.name = original.name;
+        this.priority = original.priority;
+        this.createdTimestamp = original.createdTimestamp;
+        this.payload = original.payload;
+        this.retryCount = original.retryCount + 1;
+    }
+
 
     @Override
     public int compareTo(Task other) {
