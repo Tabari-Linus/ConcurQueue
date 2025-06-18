@@ -52,4 +52,22 @@ public class SystemMonitor implements Runnable {
     }
 
 
+
+    private static class SystemMetrics {
+        int mainQueueSize;
+        int retryQueueSize;
+        int activeThreads;
+        int corePoolSize;
+        int maximumPoolSize;
+        long completedTaskCount;
+        int submittedCount;
+        int processingCount;
+        int completedCount;
+        int failedCount;
+        int retryCount;
+        int abandonedCount;
+        int totalProcessed;
+        double averageProcessingTime;
+    }
+
 }
