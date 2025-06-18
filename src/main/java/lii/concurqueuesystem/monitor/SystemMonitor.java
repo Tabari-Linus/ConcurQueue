@@ -4,6 +4,7 @@ import lii.concurqueuesystem.enums.TaskStatus;
 import lii.concurqueuesystem.model.Task;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -11,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class SystemMonitor implements Runnable {
 
@@ -50,6 +52,34 @@ public class SystemMonitor implements Runnable {
     @Override
     public void run() {
         logger.info("System monitor started");
+    }
+
+    private SystemMetrics collectMetrics() {
+        SystemMetrics metrics = new SystemMetrics();
+
+        metrics.mainQueueSize = taskQueue.size();
+        metrics.retryQueueSize = retryQueue.size();
+
+        metrics.activeThreads = workerPool.getActiveCount();
+        metrics.corePoolSize = workerPool.getCorePoolSize();
+        metrics.maximumPoolSize = workerPool.getMaximumPoolSize();
+        metrics.completedTaskCount = workerPool.getCompletedTaskCount();
+
+        Map<TaskStatus, Long> statusCounts = taskStatusMap.values().stream()
+                .collect(Collectors.groupingBy(status -> status, Collectors.counting()));
+
+        metrics.submittedCount = statusCounts.getOrDefault(TaskStatus.SUBMITTED, 0L).intValue();
+        metrics.processingCount = statusCounts.getOrDefault(TaskStatus.PROCESSING, 0L).intValue();
+        metrics.completedCount = statusCounts.getOrDefault(TaskStatus.COMPLETED, 0L).intValue();
+        metrics.failedCount = statusCounts.getOrDefault(TaskStatus.FAILED, 0L).intValue();
+        metrics.retryCount = statusCounts.getOrDefault(TaskStatus.RETRY, 0L).intValue();
+        metrics.abandonedCount = statusCounts.getOrDefault(TaskStatus.ABANDONED, 0L).intValue();
+
+        metrics.totalProcessed = tasksProcessed.get();
+        metrics.averageProcessingTime = metrics.totalProcessed > 0 ?
+                (double) totalProcessingTime.get() / metrics.totalProcessed : 0.0;
+
+        return metrics;
     }
 
     private String generateJsonReport(SystemMetrics metrics) {
