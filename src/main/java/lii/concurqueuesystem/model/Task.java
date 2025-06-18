@@ -51,7 +51,6 @@ public class Task implements Comparable<Task>{
 
     public void incrementRetryCount() {
         this.retryCount++;
-        this.lastProcessedTimestamp = Instant.now();
     }
 
     @Override
