@@ -3,6 +3,8 @@ package lii.concurqueuesystem.monitor;
 import lii.concurqueuesystem.enums.TaskStatus;
 import lii.concurqueuesystem.model.Task;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -52,6 +54,23 @@ public class SystemMonitor implements Runnable {
     @Override
     public void run() {
         logger.info("System monitor started");
+    }
+
+    private void exportTaskStatusToJson() {
+        try {
+            SystemMetrics metrics = collectMetrics();
+            String json = generateJsonReport(metrics);
+
+            String filename = String.format("concur_queue_status_%d.json", System.currentTimeMillis());
+            try (FileWriter writer = new FileWriter(filename)) {
+                writer.write(json);
+            }
+
+            logger.info("Task status exported to: " + filename);
+
+        } catch (IOException e) {
+            logger.severe("Failed to export task status to JSON: " + e.getMessage());
+        }
     }
 
     private SystemMetrics collectMetrics() {
