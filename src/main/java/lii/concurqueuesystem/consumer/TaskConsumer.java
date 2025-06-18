@@ -43,6 +43,23 @@ public class TaskConsumer implements Runnable {
     @Override
     public void run() {
         logger.info(String.format("Worker %s started", workerName));
+
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                Task task = taskQueue.take();
+                processTask(task);
+
+            } catch (InterruptedException e) {
+                logger.info(String.format("Worker %s interrupted", workerName));
+                Thread.currentThread().interrupt();
+                break;
+            } catch (Exception e) {
+                logger.severe(String.format("Worker %s encountered unexpected error: %s",
+                        workerName, e.getMessage()));
+            }
+        }
+
+        logger.info(String.format("Worker %s shutting down", workerName));
     }
 
     private void processTask(Task task) {
