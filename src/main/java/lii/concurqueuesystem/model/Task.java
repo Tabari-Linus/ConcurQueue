@@ -35,6 +35,16 @@ public class Task implements Comparable<Task>{
         this.retryCount = original.retryCount + 1;
     }
 
+    public Task createRetry() {
+        if (retryCount >= MAX_RETRIES) {
+            throw new IllegalStateException("Max retries exceeded for task: " + id);
+        }
+        return new Task(this);
+    }
+
+    public boolean canRetry() {
+        return retryCount < MAX_RETRIES;
+    }
 
     @Override
     public int compareTo(Task other) {
