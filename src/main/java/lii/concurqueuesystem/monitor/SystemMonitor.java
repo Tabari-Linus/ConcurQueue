@@ -56,13 +56,31 @@ public class SystemMonitor implements Runnable {
         logger.info("System monitor started");
     }
 
+    private void logSystemStatus() {
+        SystemMetrics metrics = collectMetrics();
+
+        logger.info("=== SYSTEM STATUS ===");
+        logger.info(String.format("Main Queue Size: %d", metrics.mainQueueSize));
+        logger.info(String.format("Retry Queue Size: %d", metrics.retryQueueSize));
+        logger.info(String.format("Worker Pool - Active: %d, Core: %d, Max: %d, Completed: %d",
+                metrics.activeThreads, metrics.corePoolSize,
+                metrics.maximumPoolSize, metrics.completedTaskCount));
+        logger.info(String.format("Task Status - Submitted: %d, Processing: %d, Completed: %d, Failed: %d, Retry: %d, Abandoned: %d",
+                metrics.submittedCount, metrics.processingCount,
+                metrics.completedCount, metrics.failedCount,
+                metrics.retryCount, metrics.abandonedCount));
+        logger.info(String.format("Performance - Total Processed: %d, Avg Processing Time: %.2f ms",
+                metrics.totalProcessed, metrics.averageProcessingTime));
+        logger.info("==================");
+    }
+
     private void detectStalledTasks() {
         long currentTime = System.currentTimeMillis();
         long stalledThreshold = 30000;
 
         int stalledCount = 0;
         for (Map.Entry<String, TaskStatus> entry : taskStatusMap.entrySet()) {
-            if (entry.getValue() == TaskStatus.PROCESSING) {
+            if (entry.getValue() == TaskStatus.PROCESSING  ) {
                 stalledCount++;
             }
         }
