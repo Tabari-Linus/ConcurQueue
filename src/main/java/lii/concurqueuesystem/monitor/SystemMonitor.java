@@ -56,6 +56,23 @@ public class SystemMonitor implements Runnable {
         logger.info("System monitor started");
     }
 
+    private void detectStalledTasks() {
+        long currentTime = System.currentTimeMillis();
+        long stalledThreshold = 30000;
+
+        int stalledCount = 0;
+        for (Map.Entry<String, TaskStatus> entry : taskStatusMap.entrySet()) {
+            if (entry.getValue() == TaskStatus.PROCESSING) {
+                stalledCount++;
+            }
+        }
+
+        if (stalledCount > 0) {
+            logger.warning(String.format("Potential stalled tasks detected: %d tasks in PROCESSING state",
+                    stalledCount));
+        }
+    }
+
     private boolean shouldExportToJson() {
         return (System.currentTimeMillis() - lastExportTime) >= EXPORT_INTERVAL_MS;
     }
