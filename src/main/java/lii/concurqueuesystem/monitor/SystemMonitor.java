@@ -56,6 +56,10 @@ public class SystemMonitor implements Runnable {
         logger.info("System monitor started");
     }
 
+    private boolean shouldExportToJson() {
+        return (System.currentTimeMillis() - lastExportTime) >= EXPORT_INTERVAL_MS;
+    }
+
     private void exportTaskStatusToJson() {
         try {
             SystemMetrics metrics = collectMetrics();
