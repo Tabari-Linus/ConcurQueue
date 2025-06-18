@@ -25,6 +25,7 @@ public class Task implements Comparable<Task>{
         this.priority = priority;
         this.createdTimestamp = Instant.now();
         this.payload = payload;
+        this.retryCount = 0;
     }
 
     private Task(Task original) {
