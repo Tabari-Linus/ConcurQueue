@@ -35,6 +35,7 @@ public class Task implements Comparable<Task>{
         this.createdTimestamp = original.createdTimestamp;
         this.payload = original.payload;
         this.retryCount = original.retryCount + 1;
+        this.lastProcessedTimestamp = original.lastProcessedTimestamp;
     }
 
     public Task createRetry() {
