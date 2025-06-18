@@ -28,7 +28,7 @@ public class Task implements Comparable<Task>{
         this.retryCount = 0;
     }
 
-    private Task(Task original) {
+    public Task(Task original) {
         this.id = original.id;
         this.name = original.name;
         this.priority = original.priority;
