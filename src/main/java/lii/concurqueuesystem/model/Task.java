@@ -49,6 +49,11 @@ public class Task implements Comparable<Task>{
         return retryCount < MAX_RETRIES;
     }
 
+    public void incrementRetryCount() {
+        this.retryCount++;
+        this.lastProcessedTimestamp = Instant.now();
+    }
+
     @Override
     public int compareTo(Task other) {
         int priorityComparison = Integer.compare(this.priority, other.priority);
