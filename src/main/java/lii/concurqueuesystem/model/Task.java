@@ -1,8 +1,13 @@
 package lii.concurqueuesystem.model;
 
+import lombok.Data;
+import lombok.Getter;
+
 import java.time.Instant;
 import java.util.UUID;
 
+@Data
+@Getter
 public class Task implements Comparable<Task>{
 
     private final UUID id;
