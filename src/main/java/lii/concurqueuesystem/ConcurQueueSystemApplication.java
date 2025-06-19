@@ -1,5 +1,6 @@
 package lii.concurqueuesystem;
 
+import lii.concurqueuesystem.logging.ColoredConsoleFormatter;
 import lii.concurqueuesystem.consumer.RetryConsumer;
 import lii.concurqueuesystem.consumer.TaskConsumer;
 import lii.concurqueuesystem.enums.ProducerStrategy;
@@ -17,15 +18,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 
 public class ConcurQueueSystemApplication {
     private static final Logger logger = Logger.getLogger(ConcurQueueSystemApplication.class.getName());
 
-    private static final int WORKER_POOL_SIZE = 5;
+    private static final int WORKER_POOL_SIZE = 3;
     private static final int RETRY_WORKER_COUNT = 2;
-    private static final int QUEUE_CAPACITY = 100;
+    private static final int QUEUE_CAPACITY = 50;
 
     private final BlockingQueue<Task> taskQueue;
     private final BlockingQueue<Task> retryQueue;
@@ -106,16 +106,7 @@ public class ConcurQueueSystemApplication {
 
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setLevel(Level.INFO);
-        consoleHandler.setFormatter(new SimpleFormatter() {
-            @Override
-            public String format(java.util.logging.LogRecord record) {
-                return String.format("[%1$tF %1$tT] [%2$s] %3$s: %4$s%n",
-                        record.getMillis(),
-                        record.getLevel(),
-                        record.getLoggerName().substring(record.getLoggerName().lastIndexOf('.') + 1),
-                        record.getMessage());
-            }
-        });
+        consoleHandler.setFormatter(new ColoredConsoleFormatter());
 
         rootLogger.addHandler(consoleHandler);
     }
@@ -315,10 +306,10 @@ public class ConcurQueueSystemApplication {
 
         try {
             logger.info("System running... (Press Ctrl+C to shutdown)");
-            Thread.sleep(120000); // 2 minutes
+            Thread.sleep(30000);
 
-            logger.info("\nDemonstrating concurrency concepts...");
-            ConcurrencyDemo.runAllDemonstrations();
+//            logger.info("\nDemonstrating concurrency concepts...");
+//            ConcurrencyDemo.runAllDemonstrations();
 
         } catch (InterruptedException e) {
             logger.info("Main thread interrupted");
