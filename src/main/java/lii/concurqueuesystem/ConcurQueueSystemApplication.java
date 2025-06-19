@@ -9,6 +9,7 @@ import lii.concurqueuesystem.enums.TaskStatus;
 import lii.concurqueuesystem.model.Task;
 import lii.concurqueuesystem.monitor.SystemMonitor;
 import lii.concurqueuesystem.producer.TaskProducer;
+import lii.concurqueuesystem.util.DisplayFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -276,6 +277,22 @@ public class ConcurQueueSystemApplication {
     }
 
     private void printFinalStatistics() {
+        var statusCounts = taskStatusMap.values().stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        status -> status.name(),
+                        java.util.stream.Collectors.counting()));
+
+        String finalDisplay = DisplayFormatter.createFinalStatisticsDisplay(
+                tasksProcessed.get(),
+                tasksProcessed.get() > 0 ? (double) totalProcessingTime.get() / tasksProcessed.get() : 0.0,
+                taskQueue.size(),
+                retryQueue.size(),
+                taskStatusMap.size(),
+                statusCounts
+        );
+
+        System.out.print(finalDisplay);
+
         logger.info("=== FINAL SYSTEM STATISTICS ===");
         logger.info(String.format("Total tasks processed: %d", tasksProcessed.get()));
         logger.info(String.format("Average processing time: %.2f ms",
@@ -285,16 +302,10 @@ public class ConcurQueueSystemApplication {
         logger.info(String.format("Tasks in retry queue: %d", retryQueue.size()));
         logger.info(String.format("Total tasks tracked: %d", taskStatusMap.size()));
 
-        var statusCounts = taskStatusMap.values().stream()
-                .collect(java.util.stream.Collectors.groupingBy(
-                        status -> status,
-                        java.util.stream.Collectors.counting()));
-
         logger.info("Task status breakdown:");
         for (var entry : statusCounts.entrySet()) {
             logger.info(String.format("  %s: %d", entry.getKey(), entry.getValue()));
         }
-
         logger.info("===============================");
     }
 
