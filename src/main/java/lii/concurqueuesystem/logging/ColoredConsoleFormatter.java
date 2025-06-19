@@ -1,10 +1,12 @@
-package lii.concurqueuesystem.config;
+package lii.concurqueuesystem.logging;
 
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 public class ColoredConsoleFormatter extends Formatter {
+
+    // ANSI color codes
     private static final String RESET = "\u001B[0m";
     private static final String RED = "\u001B[31m";
     private static final String YELLOW = "\u001B[33m";
@@ -16,16 +18,22 @@ public class ColoredConsoleFormatter extends Formatter {
     public String format(LogRecord record) {
         String color = getColorForLevel(record.getLevel());
 
+        // Check if the message contains failure-related keywords
         String message = record.getMessage();
         if (isFailureRelated(message)) {
             color = RED;
         }
 
-        return String.format("%s[%1$tF %1$tT] [%2$s] %3$s: %4$s%s%n",
+        // Format timestamp separately to avoid conflicts
+        String timestamp = String.format("%1$tF %1$tT", record.getMillis());
+        String loggerName = record.getLoggerName();
+        String shortLoggerName = loggerName.substring(loggerName.lastIndexOf('.') + 1);
+
+        return String.format("%s[%s] [%s] %s: %s%s%n",
                 color,
-                record.getMillis(),
+                timestamp,
                 record.getLevel(),
-                record.getLoggerName().substring(record.getLoggerName().lastIndexOf('.') + 1),
+                shortLoggerName,
                 message,
                 RESET);
     }
@@ -46,13 +54,26 @@ public class ColoredConsoleFormatter extends Formatter {
         if (message == null) return false;
 
         String lowerMessage = message.toLowerCase();
+
+        // Don't mark as failure if it's a positive action
+        if (lowerMessage.contains("submitted") ||
+                lowerMessage.contains("completed") ||
+                lowerMessage.contains("started") ||
+                lowerMessage.contains("processing") ||
+                lowerMessage.contains("success")) {
+            return false;
+        }
+
+        // Only mark as failure for actual error conditions
         return lowerMessage.contains("failed") ||
                 lowerMessage.contains("failure") ||
                 lowerMessage.contains("error") ||
                 lowerMessage.contains("exception") ||
                 lowerMessage.contains("abandoned") ||
-                lowerMessage.contains("retry") ||
+                (lowerMessage.contains("retry") && !lowerMessage.contains("worker")) ||
                 lowerMessage.contains("deadlock") ||
-                lowerMessage.contains("stalled");
+                lowerMessage.contains("stalled") ||
+                lowerMessage.contains("interrupted") ||
+                lowerMessage.contains("timeout");
     }
 }
