@@ -1,7 +1,7 @@
 package lii.concurqueuesystem.menu;
 
 import lii.concurqueuesystem.ConcurQueueSystemApplication;
-import lii.concurqueuesystem.ConcurrencyDemo;
+import lii.concurqueuesystem.demo.ConcurrencyDemo;
 import lii.concurqueuesystem.logging.TaskLogger;
 
 import java.util.Scanner;

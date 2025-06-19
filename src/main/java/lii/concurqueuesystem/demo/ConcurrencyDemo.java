@@ -1,4 +1,4 @@
-package lii.concurqueuesystem;
+package lii.concurqueuesystem.demo;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
