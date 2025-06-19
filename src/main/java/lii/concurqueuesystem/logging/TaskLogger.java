@@ -55,4 +55,16 @@ public class TaskLogger {
     public void logSystemError(String message) {
         logger.severe(String.format("%s⚠ %s%s", RED, message, RESET));
     }
+
+    public void info(String message) {
+        logger.info(String.format("%sℹ %s%s", BLUE, message, RESET));
+    }
+
+    public void severe(String raceConditionDemoInterrupted) {
+        logger.severe(String.format("%s⚠ %s%s", RED, raceConditionDemoInterrupted, RESET));
+    }
+
+    public void warning(String s) {
+        logger.warning(String.format("%s⚠ %s%s", YELLOW, s, RESET));
+    }
 }

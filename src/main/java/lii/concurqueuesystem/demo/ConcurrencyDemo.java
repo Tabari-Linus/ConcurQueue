@@ -1,5 +1,8 @@
 package lii.concurqueuesystem.demo;
 
+import lii.concurqueuesystem.logging.TaskLogger;
+import lii.concurqueuesystem.menu.Menu;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,7 +14,7 @@ import java.util.logging.Logger;
 
 
 public class ConcurrencyDemo {
-    private static final Logger logger = Logger.getLogger(ConcurrencyDemo.class.getName());
+    private static final TaskLogger logger = new TaskLogger(ConcurrencyDemo.class);
 
     private static int unsafeCounter = 0;
 
