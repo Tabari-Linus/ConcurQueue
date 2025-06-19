@@ -141,8 +141,7 @@ public class ConcurQueueSystemApplication {
 
     private void startProducers() {
         logger.info("Starting producer threads...");
-
-        // High priority producer
+        
         Thread highPriorityProducer = new Thread(new TaskProducer(
                 "HighPriorityProducer",
                 taskQueue,
