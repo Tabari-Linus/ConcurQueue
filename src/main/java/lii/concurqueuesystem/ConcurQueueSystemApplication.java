@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 public class ConcurQueueSystemApplication {
     private static final Logger logger = Logger.getLogger(ConcurQueueSystemApplication.class.getName());
 
-    private static final int WORKER_POOL_SIZE = 3;
+    private static final int WORKER_POOL_SIZE = 5;
     private static final int RETRY_WORKER_COUNT = 2;
     private static final int QUEUE_CAPACITY = 50;
 
