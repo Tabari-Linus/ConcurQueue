@@ -45,7 +45,7 @@ public class TaskLogger {
     }
 
     public void logSystemEvent(String message) {
-        logger.info(message);
+        logger.info(String.format("%sℹ %s%s", BLUE, message, RESET));
     }
 
     public void logSystemWarning(String message) {
