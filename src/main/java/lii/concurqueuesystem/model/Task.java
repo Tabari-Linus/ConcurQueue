@@ -1,6 +1,5 @@
 package lii.concurqueuesystem.model;
 
-import lombok.Data;
 import lombok.Getter;
 
 import java.time.Instant;
@@ -55,7 +54,7 @@ public class Task implements Comparable<Task>{
 
     @Override
     public int compareTo(Task other) {
-        int priorityComparison = Integer.compare(this.priority, other.priority);
+        int priorityComparison = Integer.compare(other.priority, this.priority);
         if (priorityComparison != 0) {
             return priorityComparison;
         }
