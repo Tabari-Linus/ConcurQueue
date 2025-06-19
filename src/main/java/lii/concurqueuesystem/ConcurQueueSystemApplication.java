@@ -1,6 +1,6 @@
 package lii.concurqueuesystem;
 
-import lii.concurqueuesystem.consumer.RetryWorker;
+import lii.concurqueuesystem.consumer.RetryConsumer;
 import lii.concurqueuesystem.consumer.TaskConsumer;
 import lii.concurqueuesystem.enums.ProducerStrategy;
 import lii.concurqueuesystem.enums.TaskStatus;
@@ -140,7 +140,7 @@ public class ConcurQueueSystemApplication {
         logger.info("Starting retry workers...");
 
         for (int i = 0; i < RETRY_WORKER_COUNT; i++) {
-            retryWorkerPool.submit(new RetryWorker(retryQueue, taskQueue));
+            retryWorkerPool.submit(new RetryConsumer(retryQueue, taskQueue));
         }
 
         logger.info(String.format("Started %d retry workers", RETRY_WORKER_COUNT));

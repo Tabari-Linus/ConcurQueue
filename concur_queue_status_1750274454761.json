@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-06-18T19:20:54.760012400Z",
+  "monitor_cycle": 12,
+  "queues": {
+    "main_queue_size": 58,
+    "retry_queue_size": 0
+  },
+  "thread_pool": {
+    "active_threads": 5,
+    "core_pool_size": 5,
+    "maximum_pool_size": 5,
+    "completed_task_count": 0
+  },
+  "task_status": {
+    "submitted": 58,
+    "processing": 5,
+    "completed": 151,
+    "failed": 0,
+    "retry": 1,
+    "abandoned": 0
+  },
+  "performance": {
+    "total_processed": 151,
+    "average_processing_time_ms": 1612.23
+  }
+}
