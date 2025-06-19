@@ -298,26 +298,30 @@ public class ConcurQueueSystemApplication {
     }
 
     public static void main(String[] args) {
-        logger.info("ConcurQueue - Multithreaded Job Processing Platform");
-        logger.info("===================================================");
+        if (args.length > 0 && "direct".equals(args[0])) {
+            logger.info("ConcurQueue - Multithreaded Job Processing Platform");
+            logger.info("===================================================");
 
-        ConcurQueueSystemApplication system = new ConcurQueueSystemApplication();
-        system.start();
+            ConcurQueueSystemApplication system = new ConcurQueueSystemApplication();
+            system.start();
 
-        try {
-            logger.info("System running... (Press Ctrl+C to shutdown)");
-            Thread.sleep(30000);
+            try {
+                logger.info("System running... (Press Ctrl+C to shutdown)");
+                Thread.sleep(120000);
 
-//            logger.info("\nDemonstrating concurrency concepts...");
-//            ConcurrencyDemo.runAllDemonstrations();
+                logger.info("\nDemonstrating concurrency concepts...");
+                ConcurrencyDemo.runAllDemonstrations();
 
-        } catch (InterruptedException e) {
-            logger.info("Main thread interrupted");
-            Thread.currentThread().interrupt();
-        } finally {
-            system.shutdown();
+            } catch (InterruptedException e) {
+                logger.info("Main thread interrupted");
+                Thread.currentThread().interrupt();
+            } finally {
+                system.shutdown();
+            }
+
+            logger.info("Application terminated");
+        } else {
+            lii.concurqueuesystem.menu.Menu.main(args);
         }
-
-        logger.info("Application terminated");
     }
 }
