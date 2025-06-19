@@ -126,7 +126,7 @@ public class Menu {
             ConcurQueueSystemApplication system = new ConcurQueueSystemApplication();
             system.start();
 
-            Thread.sleep(120000); // 2 minutes
+            Thread.sleep(120000);
 
             taskLogger.logSystemEvent("Demonstrating concurrency concepts...");
             ConcurrencyDemo.runAllDemonstrations();
@@ -150,7 +150,7 @@ public class Menu {
             ConcurQueueSystemApplication system = new ConcurQueueSystemApplication();
             system.start();
 
-            Thread.sleep(30000); // 30 seconds
+            Thread.sleep(10000);
 
             system.shutdown();
             taskLogger.logSystemEvent("✅ Quick demo completed!");
@@ -176,10 +176,8 @@ public class Menu {
         int duration = input.isEmpty() ? 60 : Integer.parseInt(input);
 
         try {
-            // This would require creating a stress test version of the system
             taskLogger.logSystemEvent(String.format("Running stress test with %d producers for %d seconds", producers, duration));
 
-            // For now, run the regular system
             ConcurQueueSystemApplication system = new ConcurQueueSystemApplication();
             system.start();
             Thread.sleep(duration * 1000L);
@@ -234,7 +232,7 @@ public class Menu {
             taskLogger.logSystemEvent("Now running queue system for analysis...");
             ConcurQueueSystemApplication system = new ConcurQueueSystemApplication();
             system.start();
-            Thread.sleep(60000); // 1 minute
+            Thread.sleep(60000);
             system.shutdown();
 
             taskLogger.logSystemEvent("✅ Queue analysis completed!");
@@ -269,7 +267,6 @@ public class Menu {
                     capacity.isEmpty() ? "100" : capacity,
                     durationSec));
 
-            // For now, run with default settings
             ConcurQueueSystemApplication system = new ConcurQueueSystemApplication();
             system.start();
             Thread.sleep(durationSec * 1000L);
