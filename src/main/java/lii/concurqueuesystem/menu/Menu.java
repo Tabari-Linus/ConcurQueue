@@ -167,7 +167,7 @@ public class Menu {
         taskLogger.logSystemEvent("💪 Starting Performance Stress Test...");
         System.out.println("Running high-load simulation to test system limits.\n");
 
-        System.out.print("Enter number of producer threads (default 10): ");
+        System.out.print("Enter number of producer threads (default 5): ");
         String input = scanner.nextLine().trim();
         int producers = input.isEmpty() ? 10 : Integer.parseInt(input);
 
