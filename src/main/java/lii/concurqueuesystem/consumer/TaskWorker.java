@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class TaskConsumer implements Runnable {
+public class TaskWorker implements Runnable {
 
-    private static final TaskLogger taskLogger = new TaskLogger(TaskConsumer.class);
+    private static final TaskLogger taskLogger = new TaskLogger(TaskWorker.class);
     private static final int MAX_RETRIES = 3;
     private static final double FAILURE_PROBABILITY = 0.15;
 
@@ -26,11 +26,11 @@ public class TaskConsumer implements Runnable {
     private final Random random;
     private final String workerName;
 
-    public TaskConsumer(BlockingQueue<Task> taskQueue,
-                        BlockingQueue<Task> retryQueue,
-                        ConcurrentHashMap<String, TaskStatus> taskStatusMap,
-                        AtomicInteger tasksProcessed,
-                        AtomicLong totalProcessingTime) {
+    public TaskWorker(BlockingQueue<Task> taskQueue,
+                      BlockingQueue<Task> retryQueue,
+                      ConcurrentHashMap<String, TaskStatus> taskStatusMap,
+                      AtomicInteger tasksProcessed,
+                      AtomicLong totalProcessingTime) {
         this.taskQueue = taskQueue;
         this.retryQueue = retryQueue;
         this.taskStatusMap = taskStatusMap;
