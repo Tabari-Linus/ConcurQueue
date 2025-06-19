@@ -1,4 +1,6 @@
-package lii.concurqueuesystem;
+package lii.concurqueuesystem.demo;
+
+import lii.concurqueuesystem.logging.TaskLogger;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -7,11 +9,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
 
 
 public class ConcurrencyDemo {
-    private static final Logger logger = Logger.getLogger(ConcurrencyDemo.class.getName());
+    private static final TaskLogger logger = new TaskLogger(ConcurrencyDemo.class);
 
     private static int unsafeCounter = 0;
 
@@ -93,7 +94,7 @@ public class ConcurrencyDemo {
                 lock1.lock();
                 logger.info("Thread 1: Acquired lock1");
 
-                Thread.sleep(100); // Give other thread chance to acquire lock2
+                Thread.sleep(2000);
 
                 logger.info("Thread 1: Trying to acquire lock2");
                 if (lock2.tryLock(2, TimeUnit.SECONDS)) {
@@ -122,7 +123,7 @@ public class ConcurrencyDemo {
                 lock2.lock();
                 logger.info("Thread 2: Acquired lock2");
 
-                Thread.sleep(100);
+                Thread.sleep(2000);
 
                 logger.info("Thread 2: Trying to acquire lock1");
                 if (lock1.tryLock(2, TimeUnit.SECONDS)) {

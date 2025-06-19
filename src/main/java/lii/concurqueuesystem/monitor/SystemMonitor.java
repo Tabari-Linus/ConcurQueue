@@ -2,6 +2,7 @@ package lii.concurqueuesystem.monitor;
 
 import lii.concurqueuesystem.enums.TaskStatus;
 import lii.concurqueuesystem.model.Task;
+import lii.concurqueuesystem.util.DisplayFormatter;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -84,19 +85,24 @@ public class SystemMonitor implements Runnable {
     private void logSystemStatus() {
         SystemMetrics metrics = collectMetrics();
 
-        logger.info("=== SYSTEM STATUS ===");
-        logger.info(String.format("Main Queue Size: %d", metrics.mainQueueSize));
-        logger.info(String.format("Retry Queue Size: %d", metrics.retryQueueSize));
-        logger.info(String.format("Worker Pool - Active: %d, Core: %d, Max: %d, Completed: %d",
-                metrics.activeThreads, metrics.corePoolSize,
-                metrics.maximumPoolSize, metrics.completedTaskCount));
-        logger.info(String.format("Task Status - Submitted: %d, Processing: %d, Completed: %d, Failed: %d, Retry: %d, Abandoned: %d",
-                metrics.submittedCount, metrics.processingCount,
-                metrics.completedCount, metrics.failedCount,
-                metrics.retryCount, metrics.abandonedCount));
-        logger.info(String.format("Performance - Total Processed: %d, Avg Processing Time: %.2f ms",
-                metrics.totalProcessed, metrics.averageProcessingTime));
-        logger.info("==================");
+        String statusDisplay = DisplayFormatter.createSystemStatusDisplay(
+                metrics.mainQueueSize,
+                metrics.retryQueueSize,
+                metrics.activeThreads,
+                metrics.corePoolSize,
+                metrics.maximumPoolSize,
+                metrics.completedTaskCount,
+                metrics.submittedCount,
+                metrics.processingCount,
+                metrics.completedCount,
+                metrics.failedCount,
+                metrics.retryCount,
+                metrics.abandonedCount,
+                metrics.totalProcessed,
+                metrics.averageProcessingTime
+        );
+
+        System.out.print(statusDisplay);
     }
 
     private void detectStalledTasks() {

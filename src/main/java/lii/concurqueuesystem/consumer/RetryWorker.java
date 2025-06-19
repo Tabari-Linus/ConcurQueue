@@ -5,16 +5,16 @@ import lii.concurqueuesystem.model.Task;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
 
-public class RetryConsumer implements Runnable {
+public class RetryWorker implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(RetryConsumer.class.getName());
+    private static final Logger logger = Logger.getLogger(RetryWorker.class.getName());
     private static final long RETRY_DELAY_MS = 2000;
 
     private final BlockingQueue<Task> retryQueue;
     private final BlockingQueue<Task> mainQueue;
     private final String workerName;
 
-    public RetryConsumer(BlockingQueue<Task> retryQueue, BlockingQueue<Task> mainQueue) {
+    public RetryWorker(BlockingQueue<Task> retryQueue, BlockingQueue<Task> mainQueue) {
         this.retryQueue = retryQueue;
         this.mainQueue = mainQueue;
         this.workerName = Thread.currentThread().getName();

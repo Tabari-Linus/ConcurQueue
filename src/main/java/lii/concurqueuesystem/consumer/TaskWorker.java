@@ -2,19 +2,20 @@ package lii.concurqueuesystem.consumer;
 
 import lii.concurqueuesystem.enums.TaskStatus;
 import lii.concurqueuesystem.exception.TaskProcessingException;
+import lii.concurqueuesystem.logging.TaskLogger;
 import lii.concurqueuesystem.model.Task;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
 
-public class TaskConsumer implements Runnable {
+public class TaskWorker implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(TaskConsumer.class.getName());
+    private static final TaskLogger taskLogger = new TaskLogger(TaskWorker.class);
     private static final int MAX_RETRIES = 3;
     private static final double FAILURE_PROBABILITY = 0.15;
 
@@ -26,23 +27,25 @@ public class TaskConsumer implements Runnable {
     private final Random random;
     private final String workerName;
 
-    public TaskConsumer(BlockingQueue<Task> taskQueue,
-                        BlockingQueue<Task> retryQueue,
-                        ConcurrentHashMap<String, TaskStatus> taskStatusMap,
-                        AtomicInteger tasksProcessed,
-                        AtomicLong totalProcessingTime) {
+    String currentWorkerName = Thread.currentThread().getName();
+
+    public TaskWorker(BlockingQueue<Task> taskQueue,
+                      BlockingQueue<Task> retryQueue,
+                      ConcurrentHashMap<String, TaskStatus> taskStatusMap,
+                      AtomicInteger tasksProcessed,
+                      AtomicLong totalProcessingTime) {
         this.taskQueue = taskQueue;
         this.retryQueue = retryQueue;
         this.taskStatusMap = taskStatusMap;
         this.tasksProcessed = tasksProcessed;
         this.totalProcessingTime = totalProcessingTime;
         this.random = new Random();
-        this.workerName = Thread.currentThread().getName();
+        this.workerName = currentWorkerName;
     }
 
     @Override
     public void run() {
-        logger.info(String.format("Worker %s started", workerName));
+        taskLogger.logSystemEvent(String.format("Worker %s started", workerName));
 
         while (!Thread.currentThread().isInterrupted()) {
             try {
@@ -50,16 +53,16 @@ public class TaskConsumer implements Runnable {
                 processTask(task);
 
             } catch (InterruptedException e) {
-                logger.info(String.format("Worker %s interrupted", workerName));
+                taskLogger.logSystemEvent(String.format("Worker %s interrupted", workerName));
                 Thread.currentThread().interrupt();
                 break;
             } catch (Exception e) {
-                logger.severe(String.format("Worker %s encountered unexpected error: %s",
+                taskLogger.logSystemError(String.format("Worker %s encountered unexpected error: %s",
                         workerName, e.getMessage()));
             }
         }
 
-        logger.info(String.format("Worker %s shutting down", workerName));
+        taskLogger.logSystemEvent(String.format("Worker %s shutting down", workerName));
     }
 
     private void processTask(Task task) {
@@ -68,9 +71,7 @@ public class TaskConsumer implements Runnable {
 
         try {
             taskStatusMap.put(taskId, TaskStatus.PROCESSING);
-
-            logger.info(String.format("Worker %s processing task: %s",
-                    workerName, task));
+            taskLogger.logTaskProcessing(workerName, task.getName());
 
             long processingTime = calculateProcessingTime(task);
             Thread.sleep(processingTime);
@@ -82,14 +83,13 @@ public class TaskConsumer implements Runnable {
             taskStatusMap.put(taskId, TaskStatus.COMPLETED);
             tasksProcessed.incrementAndGet();
 
-            long actualProcessingTime = Instant.now().toEpochMilli() - startTime.toEpochMilli();
+            long actualProcessingTime = Duration.between(startTime, Instant.now()).toMillis();
             totalProcessingTime.addAndGet(actualProcessingTime);
 
-            logger.info(String.format("Worker %s completed task %s in %d ms",
-                    workerName, task.getName(), actualProcessingTime));
+            taskLogger.logTaskSuccess(workerName, task.getName(), actualProcessingTime);
 
         } catch (InterruptedException e) {
-            logger.info(String.format("Worker %s interrupted while processing task %s",
+            taskLogger.logSystemEvent(String.format("Worker %s interrupted while processing task %s",
                     workerName, task.getName()));
             taskStatusMap.put(taskId, TaskStatus.FAILED);
             Thread.currentThread().interrupt();
@@ -102,8 +102,7 @@ public class TaskConsumer implements Runnable {
     private void handleTaskFailure(Task task, Exception e) {
         String taskId = task.getId().toString();
 
-        logger.warning(String.format("Worker %s failed to process task %s: %s",
-                workerName, task.getName(), e.getMessage()));
+        taskLogger.logTaskFailure(workerName, task.getName(), e.getMessage());
 
         if (task.getRetryCount() < MAX_RETRIES) {
             Task retryTask = new Task(task);
@@ -111,17 +110,15 @@ public class TaskConsumer implements Runnable {
 
             try {
                 retryQueue.put(retryTask);
-                logger.info(String.format("Task %s queued for retry (attempt %d/%d)",
-                        task.getName(), retryTask.getRetryCount(), MAX_RETRIES));
+                taskLogger.logTaskRetry(task.getName(), retryTask.getRetryCount(), MAX_RETRIES);
             } catch (InterruptedException ie) {
-                logger.severe(String.format("Failed to queue retry for task %s", task.getName()));
+                taskLogger.logSystemError(String.format("Failed to queue retry for task %s", task.getName()));
                 taskStatusMap.put(taskId, TaskStatus.FAILED);
                 Thread.currentThread().interrupt();
             }
         } else {
             taskStatusMap.put(taskId, TaskStatus.ABANDONED);
-            logger.warning(String.format("Task %s abandoned after %d retry attempts",
-                    task.getName(), MAX_RETRIES));
+            taskLogger.logTaskAbandoned(task.getName(), MAX_RETRIES);
         }
     }
 
@@ -139,5 +136,4 @@ public class TaskConsumer implements Runnable {
     private boolean shouldSimulateFailure() {
         return random.nextDouble() < FAILURE_PROBABILITY;
     }
-
 }

@@ -1,12 +1,15 @@
 package lii.concurqueuesystem;
 
-import lii.concurqueuesystem.consumer.RetryConsumer;
-import lii.concurqueuesystem.consumer.TaskConsumer;
+import lii.concurqueuesystem.demo.ConcurrencyDemo;
+import lii.concurqueuesystem.logging.ColoredConsoleFormatter;
+import lii.concurqueuesystem.consumer.RetryWorker;
+import lii.concurqueuesystem.consumer.TaskWorker;
 import lii.concurqueuesystem.enums.ProducerStrategy;
 import lii.concurqueuesystem.enums.TaskStatus;
 import lii.concurqueuesystem.model.Task;
 import lii.concurqueuesystem.monitor.SystemMonitor;
 import lii.concurqueuesystem.producer.TaskProducer;
+import lii.concurqueuesystem.util.DisplayFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +20,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 
 public class ConcurQueueSystemApplication {
@@ -25,7 +27,7 @@ public class ConcurQueueSystemApplication {
 
     private static final int WORKER_POOL_SIZE = 5;
     private static final int RETRY_WORKER_COUNT = 2;
-    private static final int QUEUE_CAPACITY = 100;
+    private static final int QUEUE_CAPACITY = 50;
 
     private final BlockingQueue<Task> taskQueue;
     private final BlockingQueue<Task> retryQueue;
@@ -48,7 +50,7 @@ public class ConcurQueueSystemApplication {
         this.workerPool = new ThreadPoolExecutor(
                 WORKER_POOL_SIZE,
                 WORKER_POOL_SIZE,
-                60L,
+                30L,
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(),
                 new ThreadFactory() {
@@ -106,16 +108,7 @@ public class ConcurQueueSystemApplication {
 
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setLevel(Level.INFO);
-        consoleHandler.setFormatter(new SimpleFormatter() {
-            @Override
-            public String format(java.util.logging.LogRecord record) {
-                return String.format("[%1$tF %1$tT] [%2$s] %3$s: %4$s%n",
-                        record.getMillis(),
-                        record.getLevel(),
-                        record.getLoggerName().substring(record.getLoggerName().lastIndexOf('.') + 1),
-                        record.getMessage());
-            }
-        });
+        consoleHandler.setFormatter(new ColoredConsoleFormatter());
 
         rootLogger.addHandler(consoleHandler);
     }
@@ -124,7 +117,7 @@ public class ConcurQueueSystemApplication {
         logger.info("Starting worker threads...");
 
         for (int i = 0; i < WORKER_POOL_SIZE; i++) {
-            workerPool.submit(new TaskConsumer(
+            workerPool.submit(new TaskWorker(
                     taskQueue,
                     retryQueue,
                     taskStatusMap,
@@ -140,7 +133,7 @@ public class ConcurQueueSystemApplication {
         logger.info("Starting retry workers...");
 
         for (int i = 0; i < RETRY_WORKER_COUNT; i++) {
-            retryWorkerPool.submit(new RetryConsumer(retryQueue, taskQueue));
+            retryWorkerPool.submit(new RetryWorker(retryQueue, taskQueue));
         }
 
         logger.info(String.format("Started %d retry workers", RETRY_WORKER_COUNT));
@@ -148,8 +141,7 @@ public class ConcurQueueSystemApplication {
 
     private void startProducers() {
         logger.info("Starting producer threads...");
-
-        // High priority producer
+        
         Thread highPriorityProducer = new Thread(new TaskProducer(
                 "HighPriorityProducer",
                 taskQueue,
@@ -284,6 +276,22 @@ public class ConcurQueueSystemApplication {
     }
 
     private void printFinalStatistics() {
+        var statusCounts = taskStatusMap.values().stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        status -> status.name(),
+                        java.util.stream.Collectors.counting()));
+
+        String finalDisplay = DisplayFormatter.createFinalStatisticsDisplay(
+                tasksProcessed.get(),
+                tasksProcessed.get() > 0 ? (double) totalProcessingTime.get() / tasksProcessed.get() : 0.0,
+                taskQueue.size(),
+                retryQueue.size(),
+                taskStatusMap.size(),
+                statusCounts
+        );
+
+        System.out.print(finalDisplay);
+
         logger.info("=== FINAL SYSTEM STATISTICS ===");
         logger.info(String.format("Total tasks processed: %d", tasksProcessed.get()));
         logger.info(String.format("Average processing time: %.2f ms",
@@ -293,40 +301,38 @@ public class ConcurQueueSystemApplication {
         logger.info(String.format("Tasks in retry queue: %d", retryQueue.size()));
         logger.info(String.format("Total tasks tracked: %d", taskStatusMap.size()));
 
-        var statusCounts = taskStatusMap.values().stream()
-                .collect(java.util.stream.Collectors.groupingBy(
-                        status -> status,
-                        java.util.stream.Collectors.counting()));
-
         logger.info("Task status breakdown:");
         for (var entry : statusCounts.entrySet()) {
             logger.info(String.format("  %s: %d", entry.getKey(), entry.getValue()));
         }
-
         logger.info("===============================");
     }
 
     public static void main(String[] args) {
-        logger.info("ConcurQueue - Multithreaded Job Processing Platform");
-        logger.info("===================================================");
+        if (args.length > 0 && "direct".equals(args[0])) {
+            logger.info("ConcurQueue - Multithreaded Job Processing Platform");
+            logger.info("===================================================");
 
-        ConcurQueueSystemApplication system = new ConcurQueueSystemApplication();
-        system.start();
+            ConcurQueueSystemApplication system = new ConcurQueueSystemApplication();
+            system.start();
 
-        try {
-            logger.info("System running... (Press Ctrl+C to shutdown)");
-            Thread.sleep(120000); // 2 minutes
+            try {
+                logger.info("System running... (Press Ctrl+C to shutdown)");
+                Thread.sleep(120000);
 
-            logger.info("\nDemonstrating concurrency concepts...");
-            ConcurrencyDemo.runAllDemonstrations();
+                logger.info("\nDemonstrating concurrency concepts...");
+                ConcurrencyDemo.runAllDemonstrations();
 
-        } catch (InterruptedException e) {
-            logger.info("Main thread interrupted");
-            Thread.currentThread().interrupt();
-        } finally {
-            system.shutdown();
+            } catch (InterruptedException e) {
+                logger.info("Main thread interrupted");
+                Thread.currentThread().interrupt();
+            } finally {
+                system.shutdown();
+            }
+
+            logger.info("Application terminated");
+        } else {
+            lii.concurqueuesystem.menu.Menu.main(args);
         }
-
-        logger.info("Application terminated");
     }
 }
