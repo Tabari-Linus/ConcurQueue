@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
+
 @Getter
 public class Task implements Comparable<Task>{
 
@@ -60,5 +60,24 @@ public class Task implements Comparable<Task>{
             return priorityComparison;
         }
         return this.createdTimestamp.compareTo(other.createdTimestamp);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Task{id=%s, name='%s', priority=%d, retries=%d, created=%s}",
+                id.toString().substring(0, 8), name, priority, retryCount, createdTimestamp);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Task task = (Task) obj;
+        return id.equals(task.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }
