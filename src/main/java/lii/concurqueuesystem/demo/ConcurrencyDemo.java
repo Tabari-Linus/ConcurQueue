@@ -94,7 +94,7 @@ public class ConcurrencyDemo {
                 lock1.lock();
                 logger.info("Thread 1: Acquired lock1");
 
-                Thread.sleep(100);
+                Thread.sleep(2000);
 
                 logger.info("Thread 1: Trying to acquire lock2");
                 if (lock2.tryLock(2, TimeUnit.SECONDS)) {
@@ -123,7 +123,7 @@ public class ConcurrencyDemo {
                 lock2.lock();
                 logger.info("Thread 2: Acquired lock2");
 
-                Thread.sleep(100);
+                Thread.sleep(2000);
 
                 logger.info("Thread 2: Trying to acquire lock1");
                 if (lock1.tryLock(2, TimeUnit.SECONDS)) {
