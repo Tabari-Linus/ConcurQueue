@@ -50,7 +50,7 @@ public class ConcurQueueSystemApplication {
         this.workerPool = new ThreadPoolExecutor(
                 WORKER_POOL_SIZE,
                 WORKER_POOL_SIZE,
-                60L,
+                30L,
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(),
                 new ThreadFactory() {
