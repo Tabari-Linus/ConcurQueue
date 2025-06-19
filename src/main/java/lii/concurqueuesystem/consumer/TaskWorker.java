@@ -5,6 +5,7 @@ import lii.concurqueuesystem.exception.TaskProcessingException;
 import lii.concurqueuesystem.logging.TaskLogger;
 import lii.concurqueuesystem.model.Task;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
@@ -26,6 +27,8 @@ public class TaskWorker implements Runnable {
     private final Random random;
     private final String workerName;
 
+    String currentWorkerName = Thread.currentThread().getName();
+
     public TaskWorker(BlockingQueue<Task> taskQueue,
                       BlockingQueue<Task> retryQueue,
                       ConcurrentHashMap<String, TaskStatus> taskStatusMap,
@@ -37,7 +40,7 @@ public class TaskWorker implements Runnable {
         this.tasksProcessed = tasksProcessed;
         this.totalProcessingTime = totalProcessingTime;
         this.random = new Random();
-        this.workerName = Thread.currentThread().getName();
+        this.workerName = currentWorkerName;
     }
 
     @Override
@@ -80,7 +83,7 @@ public class TaskWorker implements Runnable {
             taskStatusMap.put(taskId, TaskStatus.COMPLETED);
             tasksProcessed.incrementAndGet();
 
-            long actualProcessingTime = Instant.now().toEpochMilli() - startTime.toEpochMilli();
+            long actualProcessingTime = Duration.between(startTime, Instant.now()).toMillis();
             totalProcessingTime.addAndGet(actualProcessingTime);
 
             taskLogger.logTaskSuccess(workerName, task.getName(), actualProcessingTime);
