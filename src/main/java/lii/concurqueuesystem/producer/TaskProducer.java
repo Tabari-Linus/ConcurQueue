@@ -93,8 +93,4 @@ public class TaskProducer implements Runnable {
         return new Task(taskName, priority, payload);
     }
 
-    public int getTasksProduced() {
-        return tasksProduced.get();
-    }
-
 }
