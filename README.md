@@ -153,7 +153,7 @@ java -jar target/concur-queue-system-1.0.jar
 # Run directly for 2 minutes with concurrency demos
 ./mvnw exec:java -Dexec.mainClass="lii.concurqueuesystem.ConcurQueueSystemApplication" -Dexec.args="direct"
 ```
-
+![Final System Stats](docs/Final System Statistics.png)
 ### Method 3: IDE Execution
 1. Import project into your IDE (IntelliJ IDEA, Eclipse, VS Code)
 2. Run `ConcurQueueSystemApplication.main()`
@@ -177,6 +177,7 @@ java -jar target/concur-queue-system-1.0.jar
 - AtomicInteger (thread-safe)
 - Synchronized blocks (explicit locking)
 ```
+![Race Condition](docs/race_condition.png)
 
 ### 2. Deadlock Prevention
 ```java
