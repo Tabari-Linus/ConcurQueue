@@ -1,0 +1,129 @@
+       graph TD
+    %% System Initialization
+    A[System Startup] --> B[Initialize Thread-Safe Queues]
+    B --> C[Create Worker Thread Pool<br/>5 TaskWorkers]
+    C --> D[Create Retry Worker Pool<br/>2 RetryWorkers]
+    D --> E[Start Producer Threads<br/>3 Different Strategies]
+    E --> F[Start System Monitor]
+    F --> G[Setup Shutdown Hook]
+
+    %% Producer Workflow (Parallel Streams)
+    G --> H1[High Priority Producer<br/>Strategy: HIGH_PRIORITY_FOCUSED]
+    G --> H2[Balanced Producer<br/>Strategy: BALANCED]
+    G --> H3[Batch Producer<br/>Strategy: LOW_PRIORITY_BATCH]
+
+    %% Producer Task Generation
+    H1 --> I1[Generate Task Batch<br/>Priority: 7-10 bias]
+    H2 --> I2[Generate Task Batch<br/>Priority: 1-10 uniform]
+    H3 --> I3[Generate Task Batch<br/>Priority: 1-6 bias]
+
+    %% Synchronization Point 1: Queue Operations
+    I1 --> J[🔒 PriorityBlockingQueue.put<br/>Thread-Safe Operation]
+    I2 --> J
+    I3 --> J
+    
+    J --> K[Update TaskStatus.SUBMITTED<br/>in ConcurrentHashMap]
+    K --> L[⏰ Sleep Producer Interval<br/>3-6 seconds]
+    L --> M{Shutdown Signal?}
+    M -->|No| I1
+    M -->|No| I2
+    M -->|No| I3
+    M -->|Yes| Z[Graceful Shutdown]
+
+    %% Consumer Workflow (Parallel Workers)
+    J --> N[🔒 Worker Threads<br/>BlockingQueue.take]
+    N --> O1[TaskWorker-1<br/>Process Task]
+    N --> O2[TaskWorker-2<br/>Process Task]
+    N --> O3[TaskWorker-3<br/>Process Task]
+    N --> O4[TaskWorker-4<br/>Process Task]
+    N --> O5[TaskWorker-5<br/>Process Task]
+
+    %% Task Processing Logic
+    O1 --> P[Update Status: PROCESSING]
+    O2 --> P
+    O3 --> P
+    O4 --> P
+    O5 --> P
+    
+    P --> Q[Simulate Processing Time<br/>500-5000ms based on priority]
+    Q --> R{Simulate Failure?<br/>15% probability}
+    
+    %% Success Path
+    R -->|Success 85%| S[Update Status: COMPLETED]
+    S --> T[⚛️ Atomic Increment<br/>tasksProcessed counter]
+    T --> U[⚛️ Add to totalProcessingTime]
+    U --> V[Log Success Event]
+    V --> W[🔄 Return to Queue Polling]
+    W --> N
+
+    %% Failure Path
+    R -->|Failure 15%| X{Retry Count < 3?}
+    X -->|Yes| Y[Create Retry Task<br/>Increment retry count]
+    Y --> AA[Update Status: RETRY]
+    AA --> BB[🔒 RetryQueue.put<br/>Thread-Safe Operation]
+    BB --> CC[Log Retry Event]
+    CC --> W
+
+    %% Abandonment Path
+    X -->|No| DD[Update Status: ABANDONED]
+    DD --> EE[Log Abandonment]
+    EE --> W
+
+    %% Retry Worker Workflow
+    BB --> FF[🔒 RetryWorker Threads<br/>BlockingQueue.take]
+    FF --> GG1[RetryWorker-1]
+    FF --> GG2[RetryWorker-2]
+    
+    GG1 --> HH[⏰ Retry Delay<br/>2000ms]
+    GG2 --> HH
+    HH --> II[🔒 MainQueue.put<br/>Re-queue for processing]
+    II --> JJ[Log Retry Requeue]
+    JJ --> KK[🔄 Return to Retry Polling]
+    KK --> FF
+
+    %% System Monitor Workflow
+    F --> LL[Monitor Thread<br/>Background Daemon]
+    LL --> MM[⏰ Sleep 5 seconds]
+    MM --> NN[📊 Collect System Metrics]
+    NN --> OO[Read Queue Sizes<br/>Thread Pool Status]
+    OO --> PP[📈 Calculate Statistics<br/>Processing rates, avg times]
+    PP --> QQ[🎨 Display Formatted Status<br/>Colored Console Output]
+    QQ --> RR{Export Interval?<br/>60 seconds}
+    RR -->|No| SS{Shutdown Signal?}
+    RR -->|Yes| TT[📄 Export JSON Report]
+    TT --> SS
+    SS -->|No| MM
+    SS -->|Yes| Z
+
+    %% Shutdown Workflow
+    Z --> UU[Signal All Producers Stop]
+    UU --> VV[🔄 Drain Main Queue<br/>Process remaining tasks]
+    VV --> WW[⏰ Await Thread Pool Termination<br/>30 second timeout]
+    WW --> XX[Shutdown Retry Workers]
+    XX --> YY[📊 Generate Final Statistics]
+    YY --> ZZ[System Terminated]
+
+    %% Synchronization Points Highlight
+    style J fill:#ff9999,stroke:#ff0000,stroke-width:3px
+    style N fill:#ff9999,stroke:#ff0000,stroke-width:3px
+    style BB fill:#ff9999,stroke:#ff0000,stroke-width:3px
+    style FF fill:#ff9999,stroke:#ff0000,stroke-width:3px
+    style II fill:#ff9999,stroke:#ff0000,stroke-width:3px
+
+    %% Thread Pool Highlights
+    style O1 fill:#99ccff,stroke:#0066cc,stroke-width:2px
+    style O2 fill:#99ccff,stroke:#0066cc,stroke-width:2px
+    style O3 fill:#99ccff,stroke:#0066cc,stroke-width:2px
+    style O4 fill:#99ccff,stroke:#0066cc,stroke-width:2px
+    style O5 fill:#99ccff,stroke:#0066cc,stroke-width:2px
+    style GG1 fill:#99ffcc,stroke:#00cc66,stroke-width:2px
+    style GG2 fill:#99ffcc,stroke:#00cc66,stroke-width:2px
+
+    %% Producer Strategy Highlights
+    style H1 fill:#ffcc99,stroke:#ff6600,stroke-width:2px
+    style H2 fill:#ffcc99,stroke:#ff6600,stroke-width:2px
+    style H3 fill:#ffcc99,stroke:#ff6600,stroke-width:2px
+
+    %% Critical Atomic Operations
+    style T fill:#ff99ff,stroke:#cc00cc,stroke-width:3px
+    style U fill:#ff99ff,stroke:#cc00cc,stroke-width:3px
