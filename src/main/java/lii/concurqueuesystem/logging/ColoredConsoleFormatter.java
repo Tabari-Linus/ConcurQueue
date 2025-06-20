@@ -6,7 +6,6 @@ import java.util.logging.LogRecord;
 
 public class ColoredConsoleFormatter extends Formatter {
 
-    // ANSI color codes
     private static final String RESET = "\u001B[0m";
     private static final String RED = "\u001B[31m";
     private static final String YELLOW = "\u001B[33m";
@@ -18,13 +17,11 @@ public class ColoredConsoleFormatter extends Formatter {
     public String format(LogRecord record) {
         String color = getColorForLevel(record.getLevel());
 
-        // Check if the message contains failure-related keywords
         String message = record.getMessage();
         if (isFailureRelated(message)) {
             color = RED;
         }
 
-        // Format timestamp separately to avoid conflicts
         String timestamp = String.format("%1$tF %1$tT", record.getMillis());
         String loggerName = record.getLoggerName();
         String shortLoggerName = loggerName.substring(loggerName.lastIndexOf('.') + 1);
@@ -55,7 +52,6 @@ public class ColoredConsoleFormatter extends Formatter {
 
         String lowerMessage = message.toLowerCase();
 
-        // Don't mark as failure if it's a positive action
         if (lowerMessage.contains("submitted") ||
                 lowerMessage.contains("completed") ||
                 lowerMessage.contains("started") ||
@@ -64,7 +60,6 @@ public class ColoredConsoleFormatter extends Formatter {
             return false;
         }
 
-        // Only mark as failure for actual error conditions
         return lowerMessage.contains("failed") ||
                 lowerMessage.contains("failure") ||
                 lowerMessage.contains("error") ||
